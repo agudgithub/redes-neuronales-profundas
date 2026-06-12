@@ -1,5 +1,6 @@
 data/raw/
 data/processed/
+data/FIFA_*
 *.jpg
 *.jpeg
 *.png
