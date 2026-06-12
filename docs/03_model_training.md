@@ -460,8 +460,11 @@ else:
 ```
 
 En Colab, si las imágenes de caras no están en `/content/data/`, el notebook las descarga automáticamente desde Google Drive usando el `DRIVE_ZIP_ID`. Para los CSVs, hay dos opciones:
-1. **(Recomendada)** Ejecutar primero `02_dataset_preparation.ipynb` en Colab con `SKIP_EXTRACTION=True`.
-2. Subir un ZIP con los CSVs a Drive y configurar `DRIVE_CSV_ZIP_ID`.
+1. **(Recomendada)** Ejecutar primero `02_dataset_preparation.ipynb` en Colab con `SKIP_EXTRACTION=True` — genera las caras y los CSVs en `/content/data/` automáticamente.
+2. Si solo se quiere ejecutar el notebook 03, subir un ZIP con los CSVs a Drive y configurar `DRIVE_CSV_ZIP_ID`.
+
+> **Flujo completo en Colab:**  
+> Notebook 02 (`SKIP_EXTRACTION=True`) → descarga ZIP de caras desde Drive → genera CSVs → Notebook 03 → descarga caras si no existen → entrena modelos.
 
 ---
 

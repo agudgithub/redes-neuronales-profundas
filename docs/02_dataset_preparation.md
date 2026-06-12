@@ -72,12 +72,34 @@ Los magic commands de Jupyter (`!pip`) son interpretados por el kernel de IPytho
 
 ```python
 SKIP_EXTRACTION = True   # ← En Colab SIEMPRE True
-DRIVE_ZIP_ID    = "1bf4dkkJWgH02et9NfVVxJis1X4C9nLsu"
+DRIVE_ZIP_ID    = "1pG1qYiYy2p_dVOTuP2XjW2P430ykq6l-"
 ```
 
-Hay dos caminos dependiendo de si es la primera vez:
+La lógica de descarga es la siguiente (en orden):
 
-### `SKIP_EXTRACTION = False` — Primera corrida
+```python
+if not Path(FACES_DIR).exists():
+    if SKIP_EXTRACTION:
+        # Descargar ZIP de caras desde Google Drive
+        gdown.download(id=DRIVE_ZIP_ID, output=zip_path, quiet=False)
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            zf.extractall(DATA_DIR)
+    else:
+        # Descargar dataset completo desde Kaggle
+        kagglehub.dataset_download("soumendraprasad/fifa-2022-all-players-image-dataset")
+else:
+    # Las caras ya existen — no se descarga nada
+    pass
+```
+
+### `SKIP_EXTRACTION = True` — Flujo Colab / corridas repetidas *(recomendado)*
+
+Si `FIFA_2022_ONLY_FACES/` no existe en disco, descarga el ZIP de rostros **ya procesados** desde Google Drive y lo extrae. Si ya existe, lo reutiliza directamente sin hacer ninguna descarga.
+
+**¿Por qué?**  
+La extracción con InsightFace (Paso 2) tarda ~30 segundos con GPU. Si las caras ya fueron extraídas y guardadas en Drive, no tiene sentido repetir ese proceso. Descargar el ZIP procesado es mucho más rápido (~10 segundos). El check de existencia evita descargas redundantes en corridas sucesivas dentro de la misma sesión de Colab.
+
+### `SKIP_EXTRACTION = False` — Primera corrida en local
 
 Descarga el dataset completo de Kaggle (~361 MB) usando `kagglehub`:
 
@@ -91,19 +113,6 @@ downloaded_path = kagglehub.dataset_download("soumendraprasad/fifa-2022-all-play
 
 **Decisión de diseño — cache temporal dentro del proyecto:**  
 `kagglehub` descarga a un cache global en `~/.cache/`. Para poder limpiarlo fácilmente y evitar que ocupe espacio en carpetas del sistema, redirigimos el cache al propio proyecto con `os.environ["KAGGLEHUB_CACHE"]` y lo eliminamos tras mover los archivos.
-
-### `SKIP_EXTRACTION = True` — Corridas siguientes
-
-Descarga directamente el ZIP de rostros **ya procesados** desde Google Drive:
-
-```python
-gdown.download(id=DRIVE_ZIP_ID, output=zip_path, quiet=False)
-with zipfile.ZipFile(zip_path, "r") as zf:
-    zf.extractall(DATA_DIR)
-```
-
-**¿Por qué?**  
-La extracción de rostros (Paso 2) tarda ~30 segundos con GPU. Si los rostros ya fueron extraídos y guardados en Drive, no tiene sentido repetir ese proceso. Descargar el ZIP procesado es mucho más rápido (~10 segundos).
 
 ---
 
@@ -292,7 +301,9 @@ else:
 ### Flujo recomendado en Colab
 
 1. Abrir el notebook en Colab.
-2. Verificar que `SKIP_EXTRACTION = True` (ya configurado por defecto).
-3. Ejecutar todo el notebook (Run All).
-4. El notebook descargará el ZIP de caras desde Drive (~11 MB), lo extraerá a `/content/data/`, construirá el DataFrame y generará los CSVs automáticamente.
-5. Con los CSVs generados, pasar al notebook 03.
+2. Asegurarse de que `SKIP_EXTRACTION = True` (valor por defecto).
+3. Ejecutar todo el notebook (*Run All*).
+4. El notebook detecta automáticamente que `FIFA_2022_ONLY_FACES/` no existe y descarga el ZIP desde Google Drive, lo extrae en `/content/data/`, construye el DataFrame y genera los CSVs.
+5. Con los CSVs generados, abrir el notebook 03 en Colab y ejecutarlo.
+
+> **Nota:** si se ejecuta la sesión varias veces sin reiniciar el runtime, el check de existencia de `FACES_DIR` evita que el ZIP se descargue de nuevo.
