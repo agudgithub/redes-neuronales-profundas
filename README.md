@@ -8,13 +8,17 @@ Consiste en una aplicación web interactiva que detecta y reconoce los rostros d
 
 ## 🔗 Enlaces del Proyecto
 
-* **Aplicación Web Desplegada:** `[Pegar aquí la URL de tu aplicación en Streamlit Cloud]`
+* **Aplicación Web Desplegada:** [https://reconocimiento-facial-seleccion-argentina.streamlit.app/](https://reconocimiento-facial-seleccion-argentina.streamlit.app/)
 * **Dataset de Origen (Kaggle):** [FIFA 2022 All Players Image Dataset](https://www.kaggle.com/datasets/soumendraprasad/fifa-2022-all-players-image-dataset)
 
 ---
 
 ## 👥 Integrantes
-* **[Tu Nombre y Apellido]** (GitHub: [@agudgithub](https://github.com/agudgithub))
+* **Ivan Duga** (GitHub: [@agudgithub](https://github.com/agudgithub))
+* **Facundo Aracena**
+* **Renzo Ortiz**
+* **Marcio Palazzo**
+* **Franco Sorrentino**
 
 ---
 
