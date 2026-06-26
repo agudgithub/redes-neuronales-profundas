@@ -2,7 +2,7 @@ import streamlit as st
 import torch
 from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
-from prod.utils import load_model_and_centroids, load_mtcnn, predict_faces
+from utils import load_model_and_centroids, load_mtcnn, predict_faces
 
 # Configuración de página de Streamlit
 st.set_page_config(
