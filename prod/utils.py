@@ -78,11 +78,11 @@ preprocess_transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-def predict_faces(image, model, mtcnn, centroids, idx_to_label, threshold, device_str):
+def predict_faces(image, model, mtcnn, centroids, idx_to_label, threshold, detection_threshold=0.0, device_str='cpu'):
     device = torch.device(device_str)
     
     # 1. Detectar cajas de rostros en la imagen original
-    boxes, _ = mtcnn.detect(image)
+    boxes, probs = mtcnn.detect(image)
     
     if boxes is None:
         return []
@@ -90,7 +90,11 @@ def predict_faces(image, model, mtcnn, centroids, idx_to_label, threshold, devic
     predictions = []
     
     # 2. Iterar sobre cada rostro detectado
-    for box in boxes:
+    for box, face_conf in zip(boxes, probs):
+        # Filtrar detecciones débiles según el umbral del detector
+        if face_conf is None or face_conf < detection_threshold:
+            continue
+
         x1, y1, x2, y2 = map(int, box)
         
         # Recortar el rostro usando PIL
@@ -124,6 +128,7 @@ def predict_faces(image, model, mtcnn, centroids, idx_to_label, threshold, devic
             'label': label,
             'most_similar_player': idx_to_label[pred_idx],
             'confidence': max_sim,
+            'detection_confidence': float(face_conf),
             'is_recognized': is_recognized
         })
         

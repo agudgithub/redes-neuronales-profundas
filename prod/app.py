@@ -2,7 +2,7 @@ import streamlit as st
 import torch
 from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
-from utils import load_model_and_centroids, load_mtcnn, predict_faces
+from prod.utils import load_model_and_centroids, load_mtcnn, predict_faces
 
 # Configuración de página de Streamlit
 st.set_page_config(
@@ -29,6 +29,16 @@ threshold = st.sidebar.slider(
     value=0.65,
     step=0.05,
     help="Si la similitud del rostro con el jugador más cercano es menor a este valor, se clasificará como 'Desconocido'."
+)
+
+# Slider interactivo para el umbral de confianza del detector de rostros
+detection_threshold = st.sidebar.slider(
+    "Umbral de confianza del detector de rostros",
+    min_value=0.0,
+    max_value=1.0,
+    value=0.90,
+    step=0.01,
+    help="Solo se considerarán rostros detectados con una probabilidad mayor a este valor."
 )
 
 st.sidebar.divider()
@@ -91,9 +101,8 @@ if image is not None:
         # Inferencia
         with st.spinner("Procesando imagen y buscando rostros..."):
             predictions = predict_faces(
-                image, model, mtcnn, centroids, idx_to_label, threshold, DEVICE
+                image, model, mtcnn, centroids, idx_to_label, threshold, detection_threshold, DEVICE
             )
-            
         col1, col2 = st.columns([2, 3])
         
         with col1:
@@ -141,12 +150,14 @@ if image is not None:
                             if pred['is_recognized']:
                                 display_name = pred['label'].replace('_', ' ')
                                 st.success(f"**{display_name}**")
-                                st.markdown(f"Confianza: `{pred['confidence']:.2%}`")
+                                st.markdown(f"Confianza de clasificación: `{pred['confidence']:.2%}`")
                             else:
                                 most_similar = pred['most_similar_player'].replace('_', ' ')
                                 st.error(f"**Desconocido**")
                                 st.markdown(f"Más similar a: **{most_similar}**")
-                                st.markdown(f"Similitud: `{pred['confidence']:.2%}`")
+                                st.markdown(f"Confianza de clasificación: `{pred['confidence']:.2%}`")
+
+                            st.markdown(f"Confianza de detección de rostro: `{pred['detection_confidence']:.2%}`")
                                 
     except Exception as e:
         st.error(f"Error procesando la imagen: {e}")
